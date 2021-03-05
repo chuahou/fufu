@@ -2,10 +2,17 @@
 fufu
 ####
 
-|License: MIT| |Build status|
+|License: MIT|
 
 A Purescript web app that generates riichi mahjong winning hands to
 train scoring.
+
+Building
+========
+
+To bundle Purescript code into the webpage, run::
+
+	spago bundle-app --to docs/index.js
 
 Usage
 =====
