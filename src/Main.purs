@@ -2,11 +2,12 @@ module Main (main) where
 
 import Prelude
 
-import Data.Array            (init, last, sort)
-import Data.Tuple            (Tuple (..))
-import Data.Foldable         (foldl)
+import Data.Array            (concatMap, head, init, last, replicate, sort, (:))
+import Data.Tuple            (Tuple (..), uncurry)
+import Data.Foldable         (foldl, foldr)
 import Data.Maybe            (Maybe (..))
 import Effect                (Effect)
+import Effect.Class.Console  (error)
 import Web.DOM.Document      (toParentNode)
 import Web.DOM.Element       (toNode)
 import Web.DOM.Node          (appendChild)
@@ -19,27 +20,53 @@ import Mahjong.Gen
 import Mahjong.Hand
 import Render
 
+-- | @RenderHand ts ns a@ is a hand to be rendered with drawn tiles @ts@, called
+-- | tiles @ns@ and winning tile @a@.
+data RenderHand = RenderHand (Array Tile) (Array Tile) Tile
+
+toRenderHand :: Hand -> Maybe RenderHand
+toRenderHand h = case h of
+  Hand tt m1 m2 m3 a    -> goHand tt a $ splitKans [m1, m2, m3]
+  Tanki m1 m2 m3 m4 a   -> goTanki a   $ splitKans [m1, m2, m3, m4]
+  Chiitoi a b c d e f g -> Just $ RenderHand
+    ((concatMap (replicate 2) [a, b, c, d, e, f]) <> [g]) [] g
+  where
+    splitKans = foldr go (Tuple [] [])
+    go m@(Kantsu t) (Tuple ts ns) = Tuple ts (ns <> mentsuToArray m)
+    go m            (Tuple ts ns) = Tuple (ts <> mentsuToArray m) ns
+
+    goHand tt a (Tuple ts ns) = case join $ head <$> checkTatsu tt of
+      Just agari -> Just $ RenderHand (a:a:tatsuToArray tt <> ts) ns agari
+      _          -> Nothing
+    goTanki a (Tuple ts ns) = Just $ RenderHand (a:ts) ns a
+
 main :: Effect Unit
 main = do
   -- Generate a hand
-  hand <- genHand
+  maybeRenderHand <- toRenderHand <$> genHand
+  RenderHand hand naki agari <- case maybeRenderHand of
+                                     Just rh -> pure rh
+                                     Nothing -> error "Invalid hand generated"
+                                             >>= \_ -> pure $ RenderHand [] [] East
 
-  -- Convert to array
-  let handArr = sort $ handToList hand
+  -- Get document node
+  doc <- toParentNode <<< toDocument <$> (window >>= document)
+  let query q = querySelector (QuerySelector q) doc
 
   -- Display hand
-  doc     <- toDocument <$> (window >>= document)
-  handDiv <- querySelector (QuerySelector "#hand") (toParentNode doc)
-  img     <- createImage (Manzu 1)
-  case Tuple (handDiv) (init handArr) of
-    Tuple (Just h) (Just xs) -> foldl (addImg h) (pure unit) xs
-    _                        -> pure unit
+  query "#hand" >>= \x -> case x of
+    Just h -> foldl (addImg h) (pure unit) <<< sort $ hand
+    _      -> pure unit
+
+  -- Display called tiles
+  query "#naki" >>= \x -> case x of
+    Just n -> foldl (addImg n) (pure unit) <<< sort $ naki
+    _      -> pure unit
 
   -- Display last tile
-  agariDiv <- querySelector (QuerySelector "#agari") (toParentNode doc)
-  case Tuple (agariDiv) (last handArr) of
-    Tuple (Just a) (Just x) -> createImage x >>= flip appendChild (toNode a)
-    _                       -> pure unit
+  query "#agari" >>= \x -> case x of
+    Just a -> createImage agari >>= flip appendChild (toNode a)
+    _      -> pure unit
 
   where
-    addImg h e x = e >>= \_ -> createImage x >>= flip appendChild (toNode h)
+    addImg d e x = e >>= \_ -> createImage x >>= flip appendChild (toNode d)

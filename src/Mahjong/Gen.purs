@@ -3,8 +3,9 @@
 
 module Mahjong.Gen where
 
-import Data.Array      (concat, filter, length, replicate, nub, (..), (!!), (:))
-import Data.Maybe      (Maybe (..))
+import Data.Array      (concat, concatMap, filter, length, replicate, nub, (..),
+                        (!!))
+import Data.Maybe      (Maybe (..), isJust)
 import Effect          (Effect)
 import Effect.Random   (randomInt)
 import Prelude
@@ -19,6 +20,11 @@ allTiles = concat [ map Manzu $ 1..9
                   , [East, South, West, North, White, Green, Red]
                   ]
 
+-- | Possible number tiles from @low@ to @high@ (inclusive).
+rangeTiles :: Int -> Int -> Array Tile
+rangeTiles a b = filter p allTiles
+  where p t = isJust $ maybeNumber (\_ n -> n >= a && n <= b) t
+
 -- | Randomly picks an element from the given array
 genFromList :: forall a. Array a -> Effect a
 genFromList xs = randomInt 0 (length xs - 1)
@@ -32,18 +38,7 @@ genTile = genFromList allTiles
 
 -- | Generates a random shuntsu.
 genShuntsu :: Effect Mentsu
-genShuntsu = mkShuntsu <$> genFromList startTiles
-    where
-        startTiles = filter f allTiles
-
-        -- Filter out 8s, 9s and word tiles.
-        f (Manzu n) = n <= 7
-        f (Pinzu n) = n <= 7
-        f (Souzu n) = n <= 7
-        f _         = false
-
-        -- Make a shuntsu from a start tile.
-        mkShuntsu t = Shuntsu t (succTile t) (succTile $ succTile t)
+genShuntsu = Shuntsu <$> genFromList (rangeTiles 1 7)
 
 -- | Generates a random kotsu.
 genKotsu :: Effect Mentsu
@@ -54,8 +49,8 @@ genKantsu :: Effect Mentsu
 genKantsu = Kantsu <$> genTile
 
 -- | Generates a random mentsu.
--- The number of occurrences in the list is the relative probability of each
--- occurring.
+-- | The number of occurrences in the list is the relative probability of each
+-- | occurring.
 genMentsu :: Effect Mentsu
 genMentsu = join <<< genFromList $ concat
     [ [ genKantsu ]
@@ -63,16 +58,54 @@ genMentsu = join <<< genFromList $ concat
     , replicate 10 genShuntsu
     ]
 
+-- | Generates a random ryanmen tatsu.
+genRyanmen :: Effect Tatsu
+genRyanmen = Ryanmen <$> genFromList (rangeTiles 2 7)
+
+-- | Generates a random penchan tatsu.
+genPenchan :: Effect Tatsu
+genPenchan = Penchan <$> genFromList (concatMap f [Manzu, Pinzu, Souzu])
+  where f suit = [suit 1, suit 8]
+
+-- | Generates a random kanchan tatsu.
+genKanchan :: Effect Tatsu
+genKanchan = Kanchan <$> genFromList (rangeTiles 1 7)
+
+-- | Generates a random shanpon tatsu.
+genShanpon :: Effect Tatsu
+genShanpon = Shanpon <$> genTile
+
+-- | Generates a random tatsu with probability proportional to parameter to
+-- | @replicate@.
+genTatsu :: Effect Tatsu
+genTatsu = join <<< genFromList <<< concat $
+  [ replicate 6 genRyanmen
+  , replicate 3 genKanchan
+  , replicate 2 genPenchan
+  , replicate 2 genShanpon
+  ]
+
 -- | Generates a random standard hand.
 genStandard :: Effect Hand
 genStandard = do
-    m1 <- genMentsu
-    m2 <- genMentsu
-    m3 <- genMentsu
-    m4 <- genMentsu
-    a  <- genTile
-    let hand = Hand m1 m2 m3 m4 a
-    if isHand hand then pure hand else genStandard
+  tt <- genTatsu
+  m1 <- genMentsu
+  m2 <- genMentsu
+  m3 <- genMentsu
+  a  <- genTile
+  let hand = Hand tt m1 m2 m3 a
+  if isHand hand then pure hand else genStandard
+
+-- | Generates a tanki hand.
+genTanki :: Effect Hand
+genTanki = do
+  m1 <- genMentsu
+  m2 <- genMentsu
+  m3 <- genMentsu
+  m4 <- genMentsu
+  a  <- genTile
+  let hand = Tanki m1 m2 m3 m4 a
+  if isHand hand then pure hand else genTanki
 
 -- | Generates a chiitoi hand.
 genChiitoi :: Effect Hand
@@ -90,4 +123,8 @@ genChiitoi = do
 
 -- | Generates a hand, with lower probability of chiitoi.
 genHand :: Effect Hand
-genHand = join <<< genFromList $ genChiitoi : replicate 10 genStandard
+genHand = join <<< genFromList <<< concat $
+  [ replicate 1  genChiitoi
+  , replicate 10 genStandard
+  , replicate 2  genTanki
+  ]

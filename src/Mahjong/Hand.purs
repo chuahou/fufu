@@ -5,21 +5,11 @@
 -- the focus is on training scoring (scoring kokushi musou is easy but will be
 -- bloat here).
 
-module Mahjong.Hand ( Tile (..)
-                    , succTile
-                    , isTile
-                    , Mentsu (..)
-                    , isMentsu
-                    , isShuntsu
-                    , Hand (..)
-                    , handToList
-                    , isHand
-                    , Atama
-                    , checkCounts
-                    ) where
+module Mahjong.Hand where
 
-import Data.Array    (concatMap, group, replicate, sort)
+import Data.Array    (concat, concatMap, group, replicate, sort)
 import Data.Foldable (all, length)
+import Data.Maybe    (Maybe (..), isJust)
 import Prelude
 
 -- Tiles --
@@ -96,53 +86,117 @@ isTile _         = true
 isTile' :: Int -> Boolean
 isTile' n = n >= 1 && n <= 9
 
+-- | @maybeNumber f t@ runs @f@ on the suit constructor and number of @t@ if @t@
+-- | is a number tile, returning @Just@ of the result, and returning @Nothing@
+-- | for word tiles.
+maybeNumber :: forall a. ((Int -> Tile) -> Int -> a) -> Tile -> Maybe a
+maybeNumber f (Manzu n) = Just $ f Manzu n
+maybeNumber f (Pinzu n) = Just $ f Pinzu n
+maybeNumber f (Souzu n) = Just $ f Souzu n
+maybeNumber _ _         = Nothing
+
+-- | @transformNumber f t@ runs @f@ on number arguments of number tiles, doing
+-- | nothing for word tiles.
+transformNumber :: (Int -> Int) -> Tile -> Tile
+transformNumber f t = case maybeNumber f' t of
+  Just y  -> y
+  Nothing -> t
+  where
+    f' suit n = suit $ f n
+
 -- Mentsu --
 
--- | A single mentsu.
-data Mentsu = Shuntsu Tile Tile Tile -- ^ A run.
-            | Kotsu   Tile           -- ^ A set.
-            | Kantsu  Tile           -- ^ A quad.
+-- | A single complete mentsu.
+data Mentsu = Shuntsu Tile -- ^ A run where the lowest tile is the parameter.
+            | Kotsu   Tile -- ^ A set.
+            | Kantsu  Tile -- ^ A quad.
 
 -- | Checks if a mentsu is valid.
 isMentsu :: Mentsu -> Boolean
-isMentsu (Shuntsu (Manzu x) (Manzu y) (Manzu z)) = isShuntsu x y z
-isMentsu (Shuntsu (Pinzu x) (Pinzu y) (Pinzu z)) = isShuntsu x y z
-isMentsu (Shuntsu (Souzu x) (Souzu y) (Souzu z)) = isShuntsu x y z
-isMentsu (Kotsu t)                               = isTile t
-isMentsu (Kantsu t)                              = isTile t
-isMentsu _                                       = false
+isMentsu (Shuntsu (Manzu x)) = isShuntsu x
+isMentsu (Shuntsu (Pinzu x)) = isShuntsu x
+isMentsu (Shuntsu (Souzu x)) = isShuntsu x
+isMentsu (Kotsu t)           = isTile t
+isMentsu (Kantsu t)          = isTile t
+isMentsu _                   = false
 
 -- | Checks if a shuntsu is valid.
-isShuntsu :: Int -> Int -> Int -> Boolean
-isShuntsu x y z = check <<< sort $ [x, y, z]
-    where
-        check xs@[a, b, c] = (b == a + 1) && (c == b + 1) && all isTile' xs
-        check _            = false
+isShuntsu :: Int -> Boolean
+isShuntsu x = x >= 1 && x <= 7
+
+-- | Returns an array of tiles in a mentsu. Assumes mentsu is valid.
+mentsuToArray :: Mentsu -> Array Tile
+mentsuToArray (Shuntsu t) = [t, succTile t, succTile <<< succTile $ t]
+mentsuToArray (Kotsu t)   = replicate 3 t
+mentsuToArray (Kantsu t)  = replicate 4 t
+
+-- Tatsu --
+
+-- | A tatsu to be completed into mentsu with the winning tile.
+data Tatsu = Ryanmen Tile -- ^ Two-sided wait for shuntsu, parameter is smaller tile.
+           | Penchan Tile -- ^ Penchan wait for shuntsu, parameter is 1 or 8.
+           | Kanchan Tile -- ^ Closed wait for shuntsu, parameter is smaller tile.
+           | Shanpon Tile -- ^ Winning side of shanpon wait.
+
+-- | Checks if a tatsu is valid, returning @Just ws@ where @ws@ are the winning
+-- | tiles if so, and @Nothing@ otherwise.
+checkTatsu :: Tatsu -> Maybe (Array Tile)
+checkTatsu (Ryanmen t) = join $ maybeNumber go t
+  where
+    go suit n | n >= 2 && n <= 7 = Just <<< map suit $ [n - 1, n + 2]
+              | otherwise        = Nothing
+checkTatsu (Penchan t) = join $ maybeNumber go t
+  where
+    go suit n | n == 1    = Just [suit 3]
+              | n == 8    = Just [suit 7]
+              | otherwise = Nothing
+checkTatsu (Kanchan t) = join $ maybeNumber go t
+  where
+    go suit n | n >= 1 && n <= 7 = Just [suit $ n + 1]
+              | otherwise        = Nothing
+checkTatsu (Shanpon t) = Just [t]
+
+-- | Returns an array of tiles in a tatsu. Assumes tatsu is valid.
+tatsuToArray :: Tatsu -> Array Tile
+tatsuToArray (Ryanmen t) = [t, succTile t]
+tatsuToArray (Penchan t) = [t, succTile t]
+tatsuToArray (Kanchan t) = [t, succTile <<< succTile $ t]
+tatsuToArray (Shanpon t) = [t, t]
 
 -- Hand --
 
 -- | Winning mahjong hand.
-data Hand = Hand Mentsu Mentsu Mentsu Mentsu Atama     -- ^ Standard hand.
+data Hand = Hand Tatsu Mentsu Mentsu Mentsu Atama      -- ^ Standard hand.
+          | Tanki Mentsu Mentsu Mentsu Mentsu Atama    -- ^ Standard w/ tanki.
           | Chiitoi Tile Tile Tile Tile Tile Tile Tile -- ^ Seven pairs.
 
 instance showHand :: Show Hand where
-  show = show <<< sort <<< handToList
+  show h = (case h of
+                Hand  _ _ _ _ _       -> "Hand "
+                Tanki _ _ _ _ _       -> "Tanki "
+                Chiitoi _ _ _ _ _ _ _ -> "Chiitoi ")
+         <> (show <<< sort <<< handToArray $ h)
 
 -- | Checks if a hand is valid.
 isHand :: Hand -> Boolean
-isHand h = checkCounts (handToList h) &&
+isHand h = checkCounts (handToArray h) &&
   case h of
-    Hand m1 m2 m3 m4 t    -> all isMentsu [m1, m2, m3, m4] && isTile t
+    Hand    tt m1 m2 m3 t -> all isMentsu [m1, m2, m3] && isTile t && isJust (checkTatsu tt)
+    Tanki   m1 m2 m3 m4 t -> all isMentsu [m1, m2, m3, m4] && isTile t
     Chiitoi a b c d e f g -> all isTile [a, b, c, d, e, f, g]
 
--- | Gets tiles occuring in a hand as a list.
-handToList :: Hand -> Array Tile
-handToList (Hand m1 m2 m3 m4 t) = concatMap mentsuToList [m1, m2, m3, m4] <> [t, t]
-  where
-    mentsuToList (Shuntsu x y z) = [x, y, z]
-    mentsuToList (Kotsu x)       = replicate 3 x
-    mentsuToList (Kantsu x)      = replicate 4 x
-handToList (Chiitoi a b c d e f g) = concatMap (replicate 2) [a, b, c, d, e, f, g]
+-- | Gets tiles occuring in a hand as a array.
+handToArray :: Hand -> Array Tile
+handToArray (Hand tt m1 m2 m3 a) = concat
+  [ concatMap mentsuToArray [m1, m2, m3]
+  , [a, a]
+  , tatsuToArray tt
+  , case checkTatsu tt of -- winning tiles
+         Just agari -> agari
+         Nothing    -> []
+  ]
+handToArray (Tanki m1 m2 m3 m4 a)   = concatMap mentsuToArray [m1, m2, m3, m4] <> [a, a]
+handToArray (Chiitoi a b c d e f g) = concatMap (replicate 2) [a, b, c, d, e, f, g]
 
 -- | Check that no tile in the given list occurs more than four times.
 checkCounts :: Array Tile -> Boolean
