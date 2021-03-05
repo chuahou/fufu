@@ -21,8 +21,11 @@
 
     in rec {
       devShell.${system} = pkgs.mkShell {
-        buildInputs = (with easy-ps; [ purescript spago ])
-                   ++ (with pkgs;    [ nodejs-slim ]);
+        buildInputs =
+          (with easy-ps; [ purescript spago ])
+          ++ (with pkgs; [
+            nodejs-slim nodePackages.purescript-language-server
+          ]);
       };
     };
 }
