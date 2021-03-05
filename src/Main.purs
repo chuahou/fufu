@@ -2,14 +2,14 @@ module Main (main) where
 
 import Prelude
 
-import Data.Array            (concatMap, head, init, last, replicate, sort, (:))
-import Data.Tuple            (Tuple (..), uncurry)
-import Data.Foldable         (foldl, foldr)
+import Data.Array            (concatMap, head, replicate, sort, (:))
+import Data.Tuple            (Tuple (..))
+import Data.Foldable         (foldl, foldr, null)
 import Data.Maybe            (Maybe (..))
 import Effect                (Effect)
 import Effect.Class.Console  (error)
 import Web.DOM.Document      (toParentNode)
-import Web.DOM.Element       (toNode)
+import Web.DOM.Element       (setAttribute, toNode)
 import Web.DOM.Node          (appendChild)
 import Web.DOM.ParentNode    (QuerySelector (..), querySelector)
 import Web.HTML              (window)
@@ -60,8 +60,10 @@ main = do
 
   -- Display called tiles
   query "#naki" >>= \x -> case x of
-    Just n -> foldl (addImg n) (pure unit) <<< sort $ naki
-    _      -> pure unit
+      Just n -> if null naki
+                  then setAttribute "style" "display:none" n
+                  else foldl (addImg n) (pure unit) <<< sort $ naki
+      _      -> pure unit
 
   -- Display last tile
   query "#agari" >>= \x -> case x of
