@@ -12,8 +12,10 @@ module Mahjong.Hand ( Tile (..)
                     , isMentsu
                     , isShuntsu
                     , Hand (..)
+                    , handToList
                     , isHand
                     , Atama
+                    , checkCounts
                     ) where
 
 import Data.Array    (concatMap, group, replicate, sort)

@@ -1,0 +1,16 @@
+img {
+	width: 50px;
+	display: inline;
+	padding: 3px;
+	background-image: url(./riichi-mahjong-tiles/Regular/Front.svg);
+	background-size: contain;
+	margin-right: 1px;
+}
+
+#naki, #agari {
+	padding-left: 15px;
+}
+
+#hand, #naki, #agari {
+	display: inline;
+}
