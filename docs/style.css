@@ -1,9 +1,10 @@
 img {
-	width: 50px;
+	width: 30px;
+	height: 40px;
 	display: inline;
-	padding: 3px;
+	padding: 4px 3px;
 	background-image: url(./riichi-mahjong-tiles/Regular/Front.svg);
-	background-size: contain;
+	background-size: 36px 48px;
 	margin-right: 1px;
 }
 
