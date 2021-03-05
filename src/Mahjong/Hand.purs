@@ -10,6 +10,7 @@ module Mahjong.Hand where
 import Data.Array    (concat, concatMap, group, replicate, sort)
 import Data.Foldable (all, length)
 import Data.Maybe    (Maybe (..), isJust)
+import Data.Tuple    (Tuple (..), snd)
 import Prelude
 
 -- Tiles --
@@ -165,10 +166,24 @@ tatsuToArray (Shanpon t) = [t, t]
 
 -- Hand --
 
+-- | A tuple of a mentsu and whether it's open, standing for "Hand Mentsu".
+type HMentsu = Tuple Boolean Mentsu
+
+-- | Create a closed mentsu.
+closed :: Mentsu -> HMentsu
+closed = Tuple false
+
+-- | Create an open mentsu.
+open :: Mentsu -> HMentsu
+open = Tuple true
+
 -- | Winning mahjong hand.
-data Hand = Hand Tatsu Mentsu Mentsu Mentsu Atama      -- ^ Standard hand.
-          | Tanki Mentsu Mentsu Mentsu Mentsu Atama    -- ^ Standard w/ tanki.
-          | Chiitoi Tile Tile Tile Tile Tile Tile Tile -- ^ Seven pairs.
+data Hand = Hand Tatsu HMentsu HMentsu HMentsu Atama    -- ^ Standard hand.
+          | Tanki HMentsu HMentsu HMentsu HMentsu Atama -- ^ Standard w/ tanki.
+          | Chiitoi Tile Tile Tile Tile Tile Tile Tile  -- ^ Seven pairs.
+
+-- | A hand with a boolean indicating if there was riichi.
+type RiichiHand = Tuple Boolean Hand
 
 instance showHand :: Show Hand where
   show h = (case h of
@@ -181,21 +196,21 @@ instance showHand :: Show Hand where
 isHand :: Hand -> Boolean
 isHand h = checkCounts (handToArray h) &&
   case h of
-    Hand    tt m1 m2 m3 t -> all isMentsu [m1, m2, m3] && isTile t && isJust (checkTatsu tt)
-    Tanki   m1 m2 m3 m4 t -> all isMentsu [m1, m2, m3, m4] && isTile t
+    Hand    tt m1 m2 m3 t -> all (isMentsu <<< snd) [m1, m2, m3] && isTile t && isJust (checkTatsu tt)
+    Tanki   m1 m2 m3 m4 t -> all (isMentsu <<< snd) [m1, m2, m3, m4] && isTile t
     Chiitoi a b c d e f g -> all isTile [a, b, c, d, e, f, g]
 
 -- | Gets tiles occuring in a hand as a array.
 handToArray :: Hand -> Array Tile
 handToArray (Hand tt m1 m2 m3 a) = concat
-  [ concatMap mentsuToArray [m1, m2, m3]
+  [ concatMap (mentsuToArray <<< snd) [m1, m2, m3]
   , [a, a]
   , tatsuToArray tt
   , case checkTatsu tt of -- winning tiles
          Just agari -> agari
          Nothing    -> []
   ]
-handToArray (Tanki m1 m2 m3 m4 a)   = concatMap mentsuToArray [m1, m2, m3, m4] <> [a, a]
+handToArray (Tanki m1 m2 m3 m4 a)   = concatMap (mentsuToArray <<< snd) [m1, m2, m3, m4] <> [a, a]
 handToArray (Chiitoi a b c d e f g) = concatMap (replicate 2) [a, b, c, d, e, f, g]
 
 -- | Check that no tile in the given list occurs more than four times.

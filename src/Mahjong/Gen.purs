@@ -6,11 +6,14 @@ module Mahjong.Gen where
 import Data.Array      (concat, concatMap, filter, length, replicate, nub, (..),
                         (!!))
 import Data.Maybe      (Maybe (..), isJust)
+import Data.Tuple      (Tuple (..), snd)
 import Effect          (Effect)
-import Effect.Random   (randomInt)
+import Effect.Random   (random, randomInt)
 import Prelude
 
 import Mahjong.Hand
+
+-- Basic Generators --
 
 -- | One of each possible tile.
 allTiles :: Array Tile
@@ -36,6 +39,8 @@ genFromList xs = randomInt 0 (length xs - 1)
 genTile :: Effect Tile
 genTile = genFromList allTiles
 
+-- Mentsu Generators --
+
 -- | Generates a random shuntsu.
 genShuntsu :: Effect Mentsu
 genShuntsu = Shuntsu <$> genFromList (rangeTiles 1 7)
@@ -57,6 +62,8 @@ genMentsu = join <<< genFromList $ concat
     , replicate 5 genKotsu
     , replicate 10 genShuntsu
     ]
+
+-- Tatsu Generators --
 
 -- | Generates a random ryanmen tatsu.
 genRyanmen :: Effect Tatsu
@@ -85,46 +92,43 @@ genTatsu = join <<< genFromList <<< concat $
   , replicate 2 genShanpon
   ]
 
--- | Generates a random standard hand.
-genStandard :: Effect Hand
-genStandard = do
-  tt <- genTatsu
-  m1 <- genMentsu
-  m2 <- genMentsu
-  m3 <- genMentsu
-  a  <- genTile
-  let hand = Hand tt m1 m2 m3 a
-  if isHand hand then pure hand else genStandard
+-- Hand Generators --
 
--- | Generates a tanki hand.
-genTanki :: Effect Hand
-genTanki = do
-  m1 <- genMentsu
-  m2 <- genMentsu
-  m3 <- genMentsu
-  m4 <- genMentsu
+-- | Generates a random riichi hand.
+genRiichi :: Effect RiichiHand
+genRiichi = do
+  m1 <- closed <$> genMentsu
+  m2 <- closed <$> genMentsu
+  m3 <- closed <$> genMentsu
   a  <- genTile
-  let hand = Tanki m1 m2 m3 m4 a
-  if isHand hand then pure hand else genTanki
+  random >>= \x -> if (x < 0.8)
+    then do
+      tt <- genTatsu
+      let hand = Tuple true $ Hand tt m1 m2 m3 a
+      if isHand $ snd hand then pure hand else genRiichi
+    else  do
+      m4 <- closed <$> genMentsu
+      let hand = Tuple true $ Tanki m1 m2 m3 m4 a
+      if isHand $ snd hand then pure hand else genRiichi
 
 -- | Generates a chiitoi hand.
-genChiitoi :: Effect Hand
+genChiitoi :: Effect RiichiHand
 genChiitoi = do
-    a <- genTile
-    b <- genTile
-    c <- genTile
-    d <- genTile
-    e <- genTile
-    f <- genTile
-    g <- genTile
-    let xs = [a, b, c, d, e, f, g]
-    if nub xs /= xs then genChiitoi else pure $
-      Chiitoi a b c d e f g
+  a <- genTile
+  b <- genTile
+  c <- genTile
+  d <- genTile
+  e <- genTile
+  f <- genTile
+  g <- genTile
+  let xs = [a, b, c, d, e, f, g]
+  riichi <- (_ < 0.8) <$> random
+  if nub xs /= xs then genChiitoi else pure $
+    Tuple riichi $ Chiitoi a b c d e f g
 
 -- | Generates a hand, with lower probability of chiitoi.
-genHand :: Effect Hand
+genHand :: Effect RiichiHand
 genHand = join <<< genFromList <<< concat $
   [ replicate 1  genChiitoi
-  , replicate 10 genStandard
-  , replicate 2  genTanki
+  , replicate 10 genRiichi
   ]

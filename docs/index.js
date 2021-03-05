@@ -1688,6 +1688,7 @@ var PS = {};
       };
   };
   exports["randomInt"] = randomInt;
+  exports["random"] = $foreign.random;
 })(PS);
 (function($PS) {
   
@@ -1711,7 +1712,8 @@ var PS = {};
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Ord = $PS["Data.Ord"];
   var Data_Semigroup = $PS["Data.Semigroup"];
-  var Data_Semiring = $PS["Data.Semiring"];        
+  var Data_Semiring = $PS["Data.Semiring"];
+  var Data_Tuple = $PS["Data.Tuple"];                
 
   // Tiles --
   // | Types of tiles.
@@ -1903,7 +1905,6 @@ var PS = {};
       return Kantsu;
   })();
 
-  // Hand --
   // | Winning mahjong hand.
   var Hand = (function () {
       function Hand(value0, value1, value2, value3, value4) {
@@ -1927,7 +1928,6 @@ var PS = {};
       return Hand;
   })();
 
-  // Hand --
   // | Winning mahjong hand.
   var Tanki = (function () {
       function Tanki(value0, value1, value2, value3, value4) {
@@ -1951,7 +1951,6 @@ var PS = {};
       return Tanki;
   })();
 
-  // Hand --
   // | Winning mahjong hand.
   var Chiitoi = (function () {
       function Chiitoi(value0, value1, value2, value3, value4, value5, value6) {
@@ -2013,7 +2012,7 @@ var PS = {};
       if (v instanceof Red) {
           return 34;
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 48, column 1 - line 48, column 22): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Mahjong.Hand (line 49, column 1 - line 49, column 22): " + [ v.constructor.name ]);
   };
 
   // | Successor function of tile number.
@@ -2056,7 +2055,7 @@ var PS = {};
       if (v instanceof Red) {
           return White.value;
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 61, column 1 - line 61, column 25): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Mahjong.Hand (line 62, column 1 - line 62, column 25): " + [ v.constructor.name ]);
   };
 
   // | Returns an array of tiles in a tatsu. Assumes tatsu is valid.
@@ -2073,8 +2072,8 @@ var PS = {};
       if (v instanceof Shanpon) {
           return [ v.value0, v.value0 ];
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 160, column 1 - line 160, column 36): " + [ v.constructor.name ]);
-  }; 
+      throw new Error("Failed pattern match at Mahjong.Hand (line 161, column 1 - line 161, column 36): " + [ v.constructor.name ]);
+  };                                       
 
   // | Returns an array of tiles in a mentsu. Assumes mentsu is valid.
   var mentsuToArray = function (v) {
@@ -2087,7 +2086,7 @@ var PS = {};
       if (v instanceof Kantsu) {
           return Data_Array.replicate(4)(v.value0);
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 128, column 1 - line 128, column 38): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Mahjong.Hand (line 129, column 1 - line 129, column 38): " + [ v.constructor.name ]);
   };
 
   // | @maybeNumber f t@ runs @f@ on the suit constructor and number of @t@ if @t@
@@ -2164,6 +2163,9 @@ var PS = {};
       };
   });
 
+  // | Create a closed mentsu.
+  var closed = Data_Tuple.Tuple.create(false);
+
   // | Checks if a tatsu is valid, returning @Just ws@ where @ws@ are the winning
   // | tiles if so, and @Nothing@ otherwise.
   var checkTatsu = function (v) {
@@ -2176,7 +2178,7 @@ var PS = {};
                   if (Data_Boolean.otherwise) {
                       return Data_Maybe.Nothing.value;
                   };
-                  throw new Error("Failed pattern match at Mahjong.Hand (line 146, column 5 - line 147, column 43): " + [ suit.constructor.name, n.constructor.name ]);
+                  throw new Error("Failed pattern match at Mahjong.Hand (line 147, column 5 - line 148, column 43): " + [ suit.constructor.name, n.constructor.name ]);
               };
           };
           return Control_Bind.join(Data_Maybe.bindMaybe)(maybeNumber(go)(v.value0));
@@ -2193,7 +2195,7 @@ var PS = {};
                   if (Data_Boolean.otherwise) {
                       return Data_Maybe.Nothing.value;
                   };
-                  throw new Error("Failed pattern match at Mahjong.Hand (line 150, column 5 - line 152, column 36): " + [ suit.constructor.name, n.constructor.name ]);
+                  throw new Error("Failed pattern match at Mahjong.Hand (line 151, column 5 - line 153, column 36): " + [ suit.constructor.name, n.constructor.name ]);
               };
           };
           return Control_Bind.join(Data_Maybe.bindMaybe)(maybeNumber(go)(v.value0));
@@ -2207,7 +2209,7 @@ var PS = {};
                   if (Data_Boolean.otherwise) {
                       return Data_Maybe.Nothing.value;
                   };
-                  throw new Error("Failed pattern match at Mahjong.Hand (line 155, column 5 - line 156, column 43): " + [ suit.constructor.name, n.constructor.name ]);
+                  throw new Error("Failed pattern match at Mahjong.Hand (line 156, column 5 - line 157, column 43): " + [ suit.constructor.name, n.constructor.name ]);
               };
           };
           return Control_Bind.join(Data_Maybe.bindMaybe)(maybeNumber(go)(v.value0));
@@ -2215,13 +2217,15 @@ var PS = {};
       if (v instanceof Shanpon) {
           return new Data_Maybe.Just([ v.value0 ]);
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 143, column 1 - line 143, column 42): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Mahjong.Hand (line 144, column 1 - line 144, column 42): " + [ v.constructor.name ]);
   };
 
   // | Gets tiles occuring in a hand as a array.
   var handToArray = function (v) {
       if (v instanceof Hand) {
-          return Data_Array.concat([ Data_Array.concatMap(mentsuToArray)([ v.value1, v.value2, v.value3 ]), [ v.value4, v.value4 ], tatsuToArray(v.value0), (function () {
+          return Data_Array.concat([ Data_Array.concatMap(function ($124) {
+              return mentsuToArray(Data_Tuple.snd($124));
+          })([ v.value1, v.value2, v.value3 ]), [ v.value4, v.value4 ], tatsuToArray(v.value0), (function () {
               var v1 = checkTatsu(v.value0);
               if (v1 instanceof Data_Maybe.Just) {
                   return v1.value0;
@@ -2229,32 +2233,34 @@ var PS = {};
               if (v1 instanceof Data_Maybe.Nothing) {
                   return [  ];
               };
-              throw new Error("Failed pattern match at Mahjong.Hand (line 194, column 5 - line 196, column 26): " + [ v1.constructor.name ]);
+              throw new Error("Failed pattern match at Mahjong.Hand (line 209, column 5 - line 211, column 26): " + [ v1.constructor.name ]);
           })() ]);
       };
       if (v instanceof Tanki) {
-          return Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.concatMap(mentsuToArray)([ v.value0, v.value1, v.value2, v.value3 ]))([ v.value4, v.value4 ]);
+          return Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.concatMap(function ($125) {
+              return mentsuToArray(Data_Tuple.snd($125));
+          })([ v.value0, v.value1, v.value2, v.value3 ]))([ v.value4, v.value4 ]);
       };
       if (v instanceof Chiitoi) {
           return Data_Array.concatMap(Data_Array.replicate(2))([ v.value0, v.value1, v.value2, v.value3, v.value4, v.value5, v.value6 ]);
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 189, column 1 - line 189, column 34): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Mahjong.Hand (line 204, column 1 - line 204, column 34): " + [ v.constructor.name ]);
   }; 
 
   // | Check that no tile in the given list occurs more than four times.
   var checkCounts = (function () {
-      var $124 = Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)((function () {
-          var $128 = Data_Foldable.length(Data_Array_NonEmpty_Internal.foldableNonEmptyArray)(Data_Semiring.semiringInt);
-          return function ($129) {
+      var $126 = Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)((function () {
+          var $130 = Data_Foldable.length(Data_Array_NonEmpty_Internal.foldableNonEmptyArray)(Data_Semiring.semiringInt);
+          return function ($131) {
               return (function (v) {
                   return v <= 4;
-              })($128($129));
+              })($130($131));
           };
       })());
-      var $125 = Data_Array.group(eqTile);
-      var $126 = Data_Array.sort(ordTile);
-      return function ($127) {
-          return $124($125($126($127)));
+      var $127 = Data_Array.group(eqTile);
+      var $128 = Data_Array.sort(ordTile);
+      return function ($129) {
+          return $126($127($128($129)));
       };
   })();
 
@@ -2262,15 +2268,19 @@ var PS = {};
   var isHand = function (h) {
       return checkCounts(handToArray(h)) && (function () {
           if (h instanceof Hand) {
-              return Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(isMentsu)([ h.value1, h.value2, h.value3 ]) && (isTile(h.value4) && Data_Maybe.isJust(checkTatsu(h.value0)));
+              return Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(function ($132) {
+                  return isMentsu(Data_Tuple.snd($132));
+              })([ h.value1, h.value2, h.value3 ]) && (isTile(h.value4) && Data_Maybe.isJust(checkTatsu(h.value0)));
           };
           if (h instanceof Tanki) {
-              return Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(isMentsu)([ h.value0, h.value1, h.value2, h.value3 ]) && isTile(h.value4);
+              return Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(function ($133) {
+                  return isMentsu(Data_Tuple.snd($133));
+              })([ h.value0, h.value1, h.value2, h.value3 ]) && isTile(h.value4);
           };
           if (h instanceof Chiitoi) {
               return Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(isTile)([ h.value0, h.value1, h.value2, h.value3, h.value4, h.value5, h.value6 ]);
           };
-          throw new Error("Failed pattern match at Mahjong.Hand (line 183, column 3 - line 186, column 62): " + [ h.constructor.name ]);
+          throw new Error("Failed pattern match at Mahjong.Hand (line 198, column 3 - line 201, column 62): " + [ h.constructor.name ]);
       })();
   };
   exports["Manzu"] = Manzu;
@@ -2294,6 +2304,7 @@ var PS = {};
   exports["Shanpon"] = Shanpon;
   exports["checkTatsu"] = checkTatsu;
   exports["tatsuToArray"] = tatsuToArray;
+  exports["closed"] = closed;
   exports["Hand"] = Hand;
   exports["Tanki"] = Tanki;
   exports["Chiitoi"] = Chiitoi;
@@ -2302,7 +2313,9 @@ var PS = {};
   exports["ordTile"] = ordTile;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.14.0
+  
+  // SPDX-License-Identifier: MIT
+  // Copyright (c) 2021 Chua Hou
   "use strict";
   $PS["Mahjong.Gen"] = $PS["Mahjong.Gen"] || {};
   var exports = $PS["Mahjong.Gen"];
@@ -2311,9 +2324,12 @@ var PS = {};
   var Data_Eq = $PS["Data.Eq"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
+  var Data_Tuple = $PS["Data.Tuple"];
   var Effect = $PS["Effect"];
   var Effect_Random = $PS["Effect.Random"];
   var Mahjong_Hand = $PS["Mahjong.Hand"];                
+
+  // | Randomly picks an element from the given array
   var genFromList = function ($copy_xs) {
       return function __do() {
           var $tco_var_xs = $copy_xs;
@@ -2330,7 +2346,7 @@ var PS = {};
                   $tco_var_xs = xs;
                   return;
               };
-              throw new Error("Failed pattern match at Mahjong.Gen (line 31, column 26 - line 33, column 45): " + [ v.constructor.name ]);
+              throw new Error("Failed pattern match at Mahjong.Gen (line 34, column 26 - line 36, column 45): " + [ v.constructor.name ]);
           };
           while (!$tco_done) {
               $tco_result = $tco_loop($tco_var_xs);
@@ -2338,14 +2354,23 @@ var PS = {};
           return $tco_result;
       };
   };
+
+  // | Generates a random penchan tatsu.
   var genPenchan = (function () {
       var f = function (suit) {
           return [ suit(1), suit(8) ];
       };
       return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Penchan.create)(genFromList(Data_Array.concatMap(f)([ Mahjong_Hand.Manzu.create, Mahjong_Hand.Pinzu.create, Mahjong_Hand.Souzu.create ])));
   })();
+
+  // Basic Generators --
+  // | One of each possible tile.
   var allTiles = Data_Array.concat([ Data_Functor.map(Data_Functor.functorArray)(Mahjong_Hand.Manzu.create)(Data_Array.range(1)(9)), Data_Functor.map(Data_Functor.functorArray)(Mahjong_Hand.Pinzu.create)(Data_Array.range(1)(9)), Data_Functor.map(Data_Functor.functorArray)(Mahjong_Hand.Souzu.create)(Data_Array.range(1)(9)), [ Mahjong_Hand.East.value, Mahjong_Hand.South.value, Mahjong_Hand.West.value, Mahjong_Hand.North.value, Mahjong_Hand.White.value, Mahjong_Hand.Green.value, Mahjong_Hand.Red.value ] ]);
+
+  // | Generates a random tile.
   var genTile = genFromList(allTiles);
+
+  // | Generates a chiitoi hand.
   var genChiitoi = function __do() {
       var $tco_done = false;
       var $tco_result;
@@ -2358,21 +2383,32 @@ var PS = {};
           var f = genTile();
           var g = genTile();
           var xs = [ a, b, c, d, e, f, g ];
-          var $4 = Data_Eq.notEq(Data_Eq.eqArray(Mahjong_Hand.eqTile))(Data_Array.nub(Mahjong_Hand.ordTile)(xs))(xs);
-          if ($4) {
+          var riichi = Data_Functor.map(Effect.functorEffect)(function (v) {
+              return v < 0.8;
+          })(Effect_Random.random)();
+          var $5 = Data_Eq.notEq(Data_Eq.eqArray(Mahjong_Hand.eqTile))(Data_Array.nub(Mahjong_Hand.ordTile)(xs))(xs);
+          if ($5) {
               return;
           };
           $tco_done = true;
-          return new Mahjong_Hand.Chiitoi(a, b, c, d, e, f, g);
+          return Data_Tuple.Tuple.create(riichi)(new Mahjong_Hand.Chiitoi(a, b, c, d, e, f, g));
       };
       while (!$tco_done) {
           $tco_result = $tco_loop();
       };
       return $tco_result;
   };
+
+  // | Generates a random kantsu.
   var genKantsu = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kantsu.create)(genTile);
+
+  // | Generates a random kotsu.
   var genKotsu = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kotsu.create)(genTile);
+
+  // | Generates a random shanpon tatsu.
   var genShanpon = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Shanpon.create)(genTile);
+
+  // | Possible number tiles from @low@ to @high@ (inclusive).
   var rangeTiles = function (a) {
       return function (b) {
           var p = function (t) {
@@ -2385,45 +2421,53 @@ var PS = {};
           return Data_Array.filter(p)(allTiles);
       };
   };
+
+  // | Generates a random kanchan tatsu.
   var genKanchan = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kanchan.create)(genFromList(rangeTiles(1)(7)));
+
+  // Tatsu Generators --
+  // | Generates a random ryanmen tatsu.
   var genRyanmen = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Ryanmen.create)(genFromList(rangeTiles(2)(7)));
+
+  // | Generates a random tatsu with probability proportional to parameter to
+  // | @replicate@.
   var genTatsu = Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ Data_Array.replicate(6)(genRyanmen), Data_Array.replicate(3)(genKanchan), Data_Array.replicate(2)(genPenchan), Data_Array.replicate(2)(genShanpon) ])));
+
+  // Mentsu Generators --
+  // | Generates a random shuntsu.
   var genShuntsu = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Shuntsu.create)(genFromList(rangeTiles(1)(7)));
+
+  // | Generates a random mentsu.
+  // | The number of occurrences in the list is the relative probability of each
+  // | occurring.
   var genMentsu = Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ [ genKantsu ], Data_Array.replicate(5)(genKotsu), Data_Array.replicate(10)(genShuntsu) ])));
-  var genStandard = function __do() {
+
+  // Hand Generators --
+  // | Generates a random riichi hand.
+  var genRiichi = function __do() {
       var $tco_done = false;
       var $tco_result;
       function $tco_loop() {
-          var tt = genTatsu();
-          var m1 = genMentsu();
-          var m2 = genMentsu();
-          var m3 = genMentsu();
+          var m1 = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.closed)(genMentsu)();
+          var m2 = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.closed)(genMentsu)();
+          var m3 = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.closed)(genMentsu)();
           var a = genTile();
-          var hand = new Mahjong_Hand.Hand(tt, m1, m2, m3, a);
-          var $5 = Mahjong_Hand.isHand(hand);
-          if ($5) {
-              $tco_done = true;
-              return hand;
-          };
-          return;
-      };
-      while (!$tco_done) {
-          $tco_result = $tco_loop();
-      };
-      return $tco_result;
-  };
-  var genTanki = function __do() {
-      var $tco_done = false;
-      var $tco_result;
-      function $tco_loop() {
-          var m1 = genMentsu();
-          var m2 = genMentsu();
-          var m3 = genMentsu();
-          var m4 = genMentsu();
-          var a = genTile();
-          var hand = new Mahjong_Hand.Tanki(m1, m2, m3, m4, a);
-          var $6 = Mahjong_Hand.isHand(hand);
+          var x = Effect_Random.random();
+          var $6 = x < 0.8;
           if ($6) {
+              var tt = genTatsu();
+              var hand = Data_Tuple.Tuple.create(true)(new Mahjong_Hand.Hand(tt, m1, m2, m3, a));
+              var $7 = Mahjong_Hand.isHand(Data_Tuple.snd(hand));
+              if ($7) {
+                  $tco_done = true;
+                  return hand;
+              };
+              return;
+          };
+          var m4 = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.closed)(genMentsu)();
+          var hand = Data_Tuple.Tuple.create(true)(new Mahjong_Hand.Tanki(m1, m2, m3, m4, a));
+          var $8 = Mahjong_Hand.isHand(Data_Tuple.snd(hand));
+          if ($8) {
               $tco_done = true;
               return hand;
           };
@@ -2434,7 +2478,9 @@ var PS = {};
       };
       return $tco_result;
   };
-  var genHand = Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ Data_Array.replicate(1)(genChiitoi), Data_Array.replicate(10)(genStandard), Data_Array.replicate(2)(genTanki) ])));
+
+  // | Generates a hand, with lower probability of chiitoi.
+  var genHand = Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ Data_Array.replicate(1)(genChiitoi), Data_Array.replicate(10)(genRiichi) ])));
   exports["genHand"] = genHand;
 })(PS);
 (function(exports) {
@@ -2641,6 +2687,7 @@ var PS = {};
   exports["document"] = $foreign.document;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.14.0
   "use strict";
   $PS["Main"] = $PS["Main"] || {};
   var exports = $PS["Main"];
@@ -2667,9 +2714,6 @@ var PS = {};
   var Web_HTML = $PS["Web.HTML"];
   var Web_HTML_HTMLDocument = $PS["Web.HTML.HTMLDocument"];
   var Web_HTML_Window = $PS["Web.HTML.Window"];                
-
-  // | @RenderHand ts ns a@ is a hand to be rendered with drawn tiles @ts@, called
-  // | tiles @ns@ and winning tile @a@.
   var RenderHand = (function () {
       function RenderHand(value0, value1, value2) {
           this.value0 = value0;
@@ -2685,42 +2729,42 @@ var PS = {};
       };
       return RenderHand;
   })();
-  var toRenderHand = function (h) {
+  var toRenderHand = function (v) {
       var goTanki = function (a) {
-          return function (v) {
-              return Data_Maybe.Just.create(new RenderHand(Data_Array.cons(a)(v.value0), v.value1, a));
+          return function (v1) {
+              return Data_Maybe.Just.create(new RenderHand(Data_Array.cons(a)(v1.value0), v1.value1, a));
           };
       };
       var goHand = function (tt) {
           return function (a) {
-              return function (v) {
-                  var v1 = Control_Bind.join(Data_Maybe.bindMaybe)(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.head)(Mahjong_Hand.checkTatsu(tt)));
-                  if (v1 instanceof Data_Maybe.Just) {
-                      return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.cons(a)(Data_Array.cons(a)(Mahjong_Hand.tatsuToArray(tt))))(v.value0), v.value1, v1.value0));
+              return function (v1) {
+                  var v2 = Control_Bind.join(Data_Maybe.bindMaybe)(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.head)(Mahjong_Hand.checkTatsu(tt)));
+                  if (v2 instanceof Data_Maybe.Just) {
+                      return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.cons(a)(Data_Array.cons(a)(Mahjong_Hand.tatsuToArray(tt))))(v1.value0), v1.value1, v2.value0));
                   };
                   return Data_Maybe.Nothing.value;
               };
           };
       };
-      var go = function (v) {
-          return function (v1) {
-              if (v instanceof Mahjong_Hand.Kantsu) {
-                  return new Data_Tuple.Tuple(v1.value0, Data_Semigroup.append(Data_Semigroup.semigroupArray)(v1.value1)(Mahjong_Hand.mentsuToArray(v)));
+      var go = function (v1) {
+          return function (v2) {
+              if (v1 instanceof Mahjong_Hand.Kantsu) {
+                  return new Data_Tuple.Tuple(v2.value0, Data_Semigroup.append(Data_Semigroup.semigroupArray)(v2.value1)(Mahjong_Hand.mentsuToArray(v1)));
               };
-              return new Data_Tuple.Tuple(Data_Semigroup.append(Data_Semigroup.semigroupArray)(v1.value0)(Mahjong_Hand.mentsuToArray(v)), v1.value1);
+              return new Data_Tuple.Tuple(Data_Semigroup.append(Data_Semigroup.semigroupArray)(v2.value0)(Mahjong_Hand.mentsuToArray(v1)), v2.value1);
           };
       };
       var splitKans = Data_Foldable.foldr(Data_Foldable.foldableArray)(go)(new Data_Tuple.Tuple([  ], [  ]));
-      if (h instanceof Mahjong_Hand.Hand) {
-          return goHand(h.value0)(h.value4)(splitKans([ h.value1, h.value2, h.value3 ]));
+      if (v.value1 instanceof Mahjong_Hand.Hand) {
+          return goHand(v.value1.value0)(v.value1.value4)(splitKans(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.snd)([ v.value1.value1, v.value1.value2, v.value1.value3 ])));
       };
-      if (h instanceof Mahjong_Hand.Tanki) {
-          return goTanki(h.value4)(splitKans([ h.value0, h.value1, h.value2, h.value3 ]));
+      if (v.value1 instanceof Mahjong_Hand.Tanki) {
+          return goTanki(v.value1.value4)(splitKans(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.snd)([ v.value1.value0, v.value1.value1, v.value1.value2, v.value1.value3 ])));
       };
-      if (h instanceof Mahjong_Hand.Chiitoi) {
-          return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.concatMap(Data_Array.replicate(2))([ h.value0, h.value1, h.value2, h.value3, h.value4, h.value5 ]))([ h.value6 ]), [  ], h.value6));
+      if (v.value1 instanceof Mahjong_Hand.Chiitoi) {
+          return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.concatMap(Data_Array.replicate(2))([ v.value1.value0, v.value1.value1, v.value1.value2, v.value1.value3, v.value1.value4, v.value1.value5 ]))([ v.value1.value6 ]), [  ], v.value1.value6));
       };
-      throw new Error("Failed pattern match at Main (line 28, column 18 - line 32, column 63): " + [ h.constructor.name ]);
+      throw new Error("Failed pattern match at Main (line 28, column 33 - line 32, column 63): " + [ v.value1.constructor.name ]);
   };
   var main = (function () {
       var addImg = function (d) {
@@ -2745,8 +2789,8 @@ var PS = {};
               };
               throw new Error("Failed pattern match at Main (line 47, column 33 - line 50, column 84): " + [ maybeRenderHand.constructor.name ]);
           })();
-          var doc = Data_Functor.map(Effect.functorEffect)(function ($57) {
-              return Web_DOM_Document.toParentNode(Web_HTML_HTMLDocument.toDocument($57));
+          var doc = Data_Functor.map(Effect.functorEffect)(function ($61) {
+              return Web_DOM_Document.toParentNode(Web_HTML_HTMLDocument.toDocument($61));
           })(Control_Bind.bind(Effect.bindEffect)(Web_HTML.window)(Web_HTML_Window.document))();
           var query = function (q) {
               return Web_DOM_ParentNode.querySelector(q)(doc);
@@ -2761,8 +2805,8 @@ var PS = {};
           (function __do() {
               var x = query("#naki")();
               if (x instanceof Data_Maybe.Just) {
-                  var $50 = Data_Foldable["null"](Data_Foldable.foldableArray)(v.value1);
-                  if ($50) {
+                  var $54 = Data_Foldable["null"](Data_Foldable.foldableArray)(v.value1);
+                  if ($54) {
                       return Web_DOM_Element.setAttribute("style")("display:none")(x.value0)();
                   };
                   return Data_Foldable.foldl(Data_Foldable.foldableArray)(addImg(x.value0))(Control_Applicative.pure(Effect.applicativeEffect)(Data_Unit.unit))(Data_Array.sort(Mahjong_Hand.ordTile)(v.value1))();

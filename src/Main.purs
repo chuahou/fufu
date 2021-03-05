@@ -3,7 +3,7 @@ module Main (main) where
 import Prelude
 
 import Data.Array            (concatMap, head, replicate, sort, (:))
-import Data.Tuple            (Tuple (..))
+import Data.Tuple            (Tuple (..), snd)
 import Data.Foldable         (foldl, foldr, null)
 import Data.Maybe            (Maybe (..))
 import Effect                (Effect)
@@ -24,10 +24,10 @@ import Render
 -- | tiles @ns@ and winning tile @a@.
 data RenderHand = RenderHand (Array Tile) (Array Tile) Tile
 
-toRenderHand :: Hand -> Maybe RenderHand
-toRenderHand h = case h of
-  Hand tt m1 m2 m3 a    -> goHand tt a $ splitKans [m1, m2, m3]
-  Tanki m1 m2 m3 m4 a   -> goTanki a   $ splitKans [m1, m2, m3, m4]
+toRenderHand :: RiichiHand -> Maybe RenderHand
+toRenderHand (Tuple riichi h) = case h of
+  Hand tt m1 m2 m3 a    -> goHand tt a $ splitKans <<< map snd $ [m1, m2, m3]
+  Tanki m1 m2 m3 m4 a   -> goTanki a   $ splitKans <<< map snd $ [m1, m2, m3, m4]
   Chiitoi a b c d e f g -> Just $ RenderHand
     ((concatMap (replicate 2) [a, b, c, d, e, f]) <> [g]) [] g
   where
