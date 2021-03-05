@@ -12,6 +12,7 @@ module Mahjong.Hand ( Tile (..)
                     , isMentsu
                     , isShuntsu
                     , Hand (..)
+                    , isHand
                     , Atama
                     ) where
 
@@ -121,6 +122,9 @@ isShuntsu x y z = check <<< sort $ [x, y, z]
 -- | Winning mahjong hand.
 data Hand = Hand Mentsu Mentsu Mentsu Mentsu Atama     -- ^ Standard hand.
           | Chiitoi Tile Tile Tile Tile Tile Tile Tile -- ^ Seven pairs.
+
+instance showHand :: Show Hand where
+  show = show <<< sort <<< handToList
 
 -- | Checks if a hand is valid.
 isHand :: Hand -> Boolean

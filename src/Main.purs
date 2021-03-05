@@ -5,8 +5,10 @@ import Prelude
 import Effect         (Effect)
 import Effect.Console (log)
 
-import Mahjong.Hand (Tile(..), succTile)
+import Mahjong.Gen
+import Mahjong.Hand
 
 main :: Effect Unit
 main = do
-  log <<< show <<< succTile $ Manzu 3
+  hand <- genHand
+  log <<< show $ hand
