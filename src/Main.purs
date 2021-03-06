@@ -3,7 +3,7 @@ module Main (main) where
 import Prelude
 
 import Data.Array            (concatMap, head, replicate, sort, (:))
-import Data.Tuple            (Tuple (..), snd)
+import Data.Tuple            (Tuple (..), fst, snd)
 import Data.Foldable         (foldl, foldr, null)
 import Data.Maybe            (Maybe (..))
 import Effect                (Effect)
@@ -43,7 +43,8 @@ toRenderHand (Tuple riichi h) = case h of
 main :: Effect Unit
 main = do
   -- Generate a hand
-  maybeRenderHand <- toRenderHand <$> genHand
+  riichiHand <- genHand
+  let maybeRenderHand = toRenderHand riichiHand
   RenderHand hand naki agari <- case maybeRenderHand of
                                      Just rh -> pure rh
                                      Nothing -> error "Invalid hand generated"
@@ -69,6 +70,13 @@ main = do
   query "#agari" >>= \x -> case x of
     Just a -> createImage agari >>= flip appendChild (toNode a)
     _      -> pure unit
+
+  -- Display riichi stick if necessary
+  query "#riibou" >>= \x -> case x of
+    Just r  -> if fst riichiHand
+                 then setAttribute "style" "visibility:visible" r
+                 else pure unit
+    Nothing -> pure unit
 
   where
     addImg d e x = e >>= \_ -> createImage x >>= flip appendChild (toNode d)
