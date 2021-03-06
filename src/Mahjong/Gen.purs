@@ -42,53 +42,90 @@ genTile = genFromList allTiles
 
 -- | Generates a random shuntsu.
 genShuntsu :: Effect Mentsu
-genShuntsu = Shuntsu <$> genFromList (rangeTiles 1 7)
+genShuntsu = genShuntsu' (const true)
+
+-- | Generates a random shuntsu only with tiles satisfying predicate.
+genShuntsu' :: (Tile -> Boolean) -> Effect Mentsu
+genShuntsu' p = Shuntsu <$> genFromList (filter p $ rangeTiles 1 7)
 
 -- | Generates a random kotsu.
 genKotsu :: Effect Mentsu
-genKotsu = Kotsu <$> genTile
+genKotsu = genKotsu' (const true)
+
+-- | Generates a random kotsu only with tiles satisfying predicate.
+genKotsu' :: (Tile -> Boolean) -> Effect Mentsu
+genKotsu' p = Kotsu <$> genFromList (filter p allTiles)
 
 -- | Generates a random kantsu.
 genKantsu :: Effect Mentsu
-genKantsu = Kantsu <$> genTile
+genKantsu = genKantsu' (const true)
+
+-- | Generates a random kantsu only with tiles satisfying predicate.
+genKantsu' :: (Tile -> Boolean) -> Effect Mentsu
+genKantsu' p = Kantsu <$> genFromList (filter p allTiles)
 
 -- | Generates a random mentsu.
+genMentsu :: Effect Mentsu
+genMentsu = genMentsu' (const true)
+
+-- | Generates a random mentsu only with tiles satisfying predicate.
 -- | The number of occurrences in the list is the relative probability of each
 -- | occurring.
-genMentsu :: Effect Mentsu
-genMentsu = join <<< genFromList $ concat
-    [ [ genKantsu ]
-    , replicate 5 genKotsu
-    , replicate 10 genShuntsu
+genMentsu' :: (Tile -> Boolean) -> Effect Mentsu
+genMentsu' p = join <<< genFromList $ concat
+    [ [ genKantsu' p ]
+    , replicate 5  $ genKotsu' p
+    , replicate 10 $ genShuntsu' p
     ]
 
 -- Tatsu Generators --
 
 -- | Generates a random ryanmen tatsu.
 genRyanmen :: Effect Tatsu
-genRyanmen = Ryanmen <$> genFromList (rangeTiles 2 7)
+genRyanmen = genRyanmen' (const true)
+
+-- | Generates a random ryanmen tatsu only with tiles satisfying the predicate.
+genRyanmen' :: (Tile -> Boolean) -> Effect Tatsu
+genRyanmen' p = Ryanmen <$> genFromList (filter p $ rangeTiles 2 7)
 
 -- | Generates a random penchan tatsu.
 genPenchan :: Effect Tatsu
-genPenchan = Penchan <$> genFromList (concatMap f [Manzu, Pinzu, Souzu])
+genPenchan = genPenchan' (const true)
+
+-- | Generates a random penchan tatsu only with tiles satisfying the predicate.
+genPenchan' :: (Tile -> Boolean) -> Effect Tatsu
+genPenchan' p = Penchan <$> genFromList (filter p $
+                              concatMap f [Manzu, Pinzu, Souzu])
   where f suit = [suit 1, suit 8]
 
 -- | Generates a random kanchan tatsu.
 genKanchan :: Effect Tatsu
-genKanchan = Kanchan <$> genFromList (rangeTiles 1 7)
+genKanchan = genKanchan' (const true)
+
+-- | Generates a random kanchan tatsu only with tiles satisfying the predicate.
+genKanchan' :: (Tile -> Boolean) -> Effect Tatsu
+genKanchan' p = Kanchan <$> genFromList (filter p $ rangeTiles 1 7)
 
 -- | Generates a random shanpon tatsu.
 genShanpon :: Effect Tatsu
-genShanpon = Shanpon <$> genTile
+genShanpon = genShanpon' (const true)
+
+-- | Generates a random shanpon tatsu only with tiles satisfying the predicate.
+genShanpon' :: (Tile -> Boolean) -> Effect Tatsu
+genShanpon' p = Shanpon <$> genFromList (filter p allTiles)
+
+-- | Generates a random tatsu.
+genTatsu :: Effect Tatsu
+genTatsu = genTatsu' (const true)
 
 -- | Generates a random tatsu with probability proportional to parameter to
 -- | @replicate@.
-genTatsu :: Effect Tatsu
-genTatsu = join <<< genFromList <<< concat $
-  [ replicate 6 genRyanmen
-  , replicate 3 genKanchan
-  , replicate 2 genPenchan
-  , replicate 2 genShanpon
+genTatsu' :: (Tile -> Boolean) -> Effect Tatsu
+genTatsu' p = join <<< genFromList <<< concat $
+  [ replicate 6 (genRyanmen' p)
+  , replicate 3 (genKanchan' p)
+  , replicate 2 (genPenchan' p)
+  , replicate 2 (genShanpon' p)
   ]
 
 -- Hand Generators --

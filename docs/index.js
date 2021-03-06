@@ -2322,6 +2322,7 @@ var PS = {};
   var Control_Bind = $PS["Control.Bind"];
   var Data_Array = $PS["Data.Array"];
   var Data_Eq = $PS["Data.Eq"];
+  var Data_Function = $PS["Data.Function"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Effect = $PS["Effect"];
@@ -2354,17 +2355,32 @@ var PS = {};
       };
   };
 
-  // | Generates a random penchan tatsu.
-  var genPenchan = (function () {
+  // | Generates a random penchan tatsu only with tiles satisfying the predicate.
+  var genPenchan$prime = function (p) {
       var f = function (suit) {
           return [ suit(1), suit(8) ];
       };
-      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Penchan.create)(genFromList(Data_Array.concatMap(f)([ Mahjong_Hand.Manzu.create, Mahjong_Hand.Pinzu.create, Mahjong_Hand.Souzu.create ])));
-  })();
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Penchan.create)(genFromList(Data_Array.filter(p)(Data_Array.concatMap(f)([ Mahjong_Hand.Manzu.create, Mahjong_Hand.Pinzu.create, Mahjong_Hand.Souzu.create ]))));
+  };                                                              
 
   // Basic Generators --
   // | One of each possible tile.
   var allTiles = Data_Array.concat([ Data_Functor.map(Data_Functor.functorArray)(Mahjong_Hand.Manzu.create)(Data_Array.range(1)(9)), Data_Functor.map(Data_Functor.functorArray)(Mahjong_Hand.Pinzu.create)(Data_Array.range(1)(9)), Data_Functor.map(Data_Functor.functorArray)(Mahjong_Hand.Souzu.create)(Data_Array.range(1)(9)), [ Mahjong_Hand.East.value, Mahjong_Hand.South.value, Mahjong_Hand.West.value, Mahjong_Hand.North.value, Mahjong_Hand.White.value, Mahjong_Hand.Green.value, Mahjong_Hand.Red.value ] ]);
+
+  // | Generates a random kantsu only with tiles satisfying predicate.
+  var genKantsu$prime = function (p) {
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kantsu.create)(genFromList(Data_Array.filter(p)(allTiles)));
+  };                                                            
+
+  // | Generates a random kotsu only with tiles satisfying predicate.
+  var genKotsu$prime = function (p) {
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kotsu.create)(genFromList(Data_Array.filter(p)(allTiles)));
+  };                                                          
+
+  // | Generates a random shanpon tatsu only with tiles satisfying the predicate.
+  var genShanpon$prime = function (p) {
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Shanpon.create)(genFromList(Data_Array.filter(p)(allTiles)));
+  };                                                              
 
   // | Generates a random tile.
   var genTile = genFromList(allTiles);
@@ -2398,15 +2414,6 @@ var PS = {};
       return $tco_result;
   };
 
-  // | Generates a random kantsu.
-  var genKantsu = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kantsu.create)(genTile);
-
-  // | Generates a random kotsu.
-  var genKotsu = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kotsu.create)(genTile);
-
-  // | Generates a random shanpon tatsu.
-  var genShanpon = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Shanpon.create)(genTile);
-
   // | Possible number tiles from @low@ to @high@ (inclusive).
   var rangeTiles = function (a) {
       return function (b) {
@@ -2421,25 +2428,39 @@ var PS = {};
       };
   };
 
-  // | Generates a random kanchan tatsu.
-  var genKanchan = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kanchan.create)(genFromList(rangeTiles(1)(7)));
+  // | Generates a random kanchan tatsu only with tiles satisfying the predicate.
+  var genKanchan$prime = function (p) {
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Kanchan.create)(genFromList(Data_Array.filter(p)(rangeTiles(1)(7))));
+  };                                                              
 
-  // Tatsu Generators --
-  // | Generates a random ryanmen tatsu.
-  var genRyanmen = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Ryanmen.create)(genFromList(rangeTiles(2)(7)));
+  // | Generates a random ryanmen tatsu only with tiles satisfying the predicate.
+  var genRyanmen$prime = function (p) {
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Ryanmen.create)(genFromList(Data_Array.filter(p)(rangeTiles(2)(7))));
+  };                                                              
 
   // | Generates a random tatsu with probability proportional to parameter to
   // | @replicate@.
-  var genTatsu = Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ Data_Array.replicate(6)(genRyanmen), Data_Array.replicate(3)(genKanchan), Data_Array.replicate(2)(genPenchan), Data_Array.replicate(2)(genShanpon) ])));
+  var genTatsu$prime = function (p) {
+      return Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ Data_Array.replicate(6)(genRyanmen$prime(p)), Data_Array.replicate(3)(genKanchan$prime(p)), Data_Array.replicate(2)(genPenchan$prime(p)), Data_Array.replicate(2)(genShanpon$prime(p)) ])));
+  };
 
-  // Mentsu Generators --
-  // | Generates a random shuntsu.
-  var genShuntsu = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Shuntsu.create)(genFromList(rangeTiles(1)(7)));
+  // | Generates a random tatsu.
+  var genTatsu = genTatsu$prime(Data_Function["const"](true));
 
-  // | Generates a random mentsu.
+  // | Generates a random shuntsu only with tiles satisfying predicate.
+  var genShuntsu$prime = function (p) {
+      return Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.Shuntsu.create)(genFromList(Data_Array.filter(p)(rangeTiles(1)(7))));
+  };
+
+  // | Generates a random mentsu only with tiles satisfying predicate.
   // | The number of occurrences in the list is the relative probability of each
   // | occurring.
-  var genMentsu = Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ [ genKantsu ], Data_Array.replicate(5)(genKotsu), Data_Array.replicate(10)(genShuntsu) ])));
+  var genMentsu$prime = function (p) {
+      return Control_Bind.join(Effect.bindEffect)(genFromList(Data_Array.concat([ [ genKantsu$prime(p) ], Data_Array.replicate(5)(genKotsu$prime(p)), Data_Array.replicate(10)(genShuntsu$prime(p)) ])));
+  };
+
+  // | Generates a random mentsu.
+  var genMentsu = genMentsu$prime(Data_Function["const"](true));
 
   // Hand Generators --
   // | Generates a random riichi hand.
@@ -2686,6 +2707,7 @@ var PS = {};
   exports["document"] = $foreign.document;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.14.0
   "use strict";
   $PS["Main"] = $PS["Main"] || {};
   var exports = $PS["Main"];
@@ -2712,9 +2734,6 @@ var PS = {};
   var Web_HTML = $PS["Web.HTML"];
   var Web_HTML_HTMLDocument = $PS["Web.HTML.HTMLDocument"];
   var Web_HTML_Window = $PS["Web.HTML.Window"];                
-
-  // | @RenderHand ts ns a@ is a hand to be rendered with drawn tiles @ts@, called
-  // | tiles @ns@ and winning tile @a@.
   var RenderHand = (function () {
       function RenderHand(value0, value1, value2) {
           this.value0 = value0;
