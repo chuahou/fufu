@@ -1,15 +1,50 @@
-img {
-	width: 60px;
-	height: 80px;
+body {
+	background-color: #265;
+	color: #fff;
+	text-align: center;
+}
+
+h1 {
+	margin-bottom: 1em;
+}
+
+img.tile {
+	width: 45px;
+	height: 60px;
 	display: inline;
-	padding: 8px 6px;
+	padding: 2px;
 	background-image: url(./riichi-mahjong-tiles/Regular/Front.svg);
-	background-size: 72px 96px;
+	background-size: 49px 64px;
+	margin-left: 1px;
 	margin-right: 1px;
 }
 
+img.tile.closed {
+	width: 49px;
+	height: 64px;
+	padding: 0px;
+	background-image: none;
+}
+
+#dora img.tile {
+	margin: 0px;
+}
+
+img.tile#bakaze, img.tile#jikaze {
+	background-image: none;
+}
+
+table#scenariotable td {
+	padding: 2px 10px;
+}
+
+table#handtable td {
+	white-space: nowrap;
+}
+
 #naki, #agari {
-	padding-left: 15px;
+	padding-left: 7px;
+	padding-right: 7px;
 }
 
 #hand, #naki, #agari {
@@ -33,4 +68,8 @@ img {
 	color: #fff;
 	font-size: 2em;
 	transform: translate(0%,-25%);
+}
+
+a {
+	color: #fff;
 }

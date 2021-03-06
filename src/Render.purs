@@ -5,7 +5,8 @@ module Render where
 
 import Effect       (Effect)
 import Prelude
-import Web.DOM.Node (Node)
+import Web.DOM.Node    (Node)
+import Web.DOM.Element (setClassName, toNode)
 import Web.HTML.HTMLImageElement as Img
 
 import Mahjong.Hand (Tile (..))
@@ -31,4 +32,6 @@ createImage t = do
   let fname = "./riichi-mahjong-tiles/Regular/" <> tileToFilename t
   elem <- Img.create
   Img.setSrc fname elem
-  pure <<< Img.toNode $ elem
+  let elem' = Img.toElement elem
+  setClassName "tile" elem'
+  pure <<< toNode $ elem'

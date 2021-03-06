@@ -9,12 +9,78 @@
 		<link rel="stylesheet" href="./style.css" />
 	</head>
 	<body>
-		<div id="riibou" style="visibility: hidden;">
-			<p><b>&middot;</b></p>
+		<h1>Riichi Scoring Trainer</h1>
+		<p>
+			<button type="button" onclick="location.reload()">New Hand</button>
+		</p>
+		<table id="scenariotable" style="margin-left:auto;margin-right:auto">
+			<tr>
+				<td> Round Wind </td>
+				<td> Seat Wind </td>
+				<td> Dora Indicators </td>
+			</tr>
+			<tr>
+				<td>
+					<img id="bakaze" class="tile"
+						src="./riichi-mahjong-tiles/Black/Ton.svg" />
+				</td>
+				<td>
+					<img id="jikaze" class="tile"
+						src="./riichi-mahjong-tiles/Black/Ton.svg" />
+				</td>
+				<td>
+					<div id="dora">
+					</div>
+				</td>
+			</tr>
+		</table>
+		<table id="handtable" style="margin-left:auto;margin-right:auto">
+			<tr>
+				<td colspan="3">
+					<div id="riibou" style="visibility: hidden">
+						<p><b>&middot;</b></p>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td><div id="hand"></div></td>
+				<td><div id="naki"></div></td>
+				<td><div id="agari"></div></td>
+			</tr>
+			<tr>
+				<td colspan="2"></td>
+				<td><div id="tsumoron">TSUMO</div></td>
+			</tr>
+		</table>
+
+		<p> Work in progress, not yet functional. </p>
+		<p>
+			Tile artwork by <tt>FluffyStuff</tt> on
+			<a href="https://github.com/FluffyStuff/riichi-mahjong-tiles">
+				GitHub</a>.
+		</p>
+
+		<p>
+			<button id="scoretoggle" type="button" onclick="toggle()">
+				Reveal Scoring
+			</button>
+		</p>
+		<script>
+			function toggle() {
+				const scoring = document.getElementById("scoring");
+				const button  = document.getElementById("scoretoggle");
+				if (scoring.style.visibility === "hidden") {
+					button.textContent = "Hide Scoring";
+					scoring.style.visibility = "visible";
+				} else {
+					button.textContent = "Reveal Scoring";
+					scoring.style.visibility = "hidden";
+				}
+			}
+		</script>
+		<div id="scoring" style="visibility:hidden">
+			Scoring will be here soon&trade;.
 		</div>
-		<div id="hand"></div>
-		<div id="naki"></div>
-		<div id="agari"></div>
 		<script src="./index.js"></script>
 	</body>
 </html>
