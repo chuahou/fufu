@@ -24,7 +24,9 @@
         buildInputs =
           (with easy-ps; [ purescript spago ])
           ++ (with pkgs; [
-            nodejs-slim nodePackages.purescript-language-server
+            nodejs-slim
+            nodePackages.purescript-language-server
+            python38Packages.livereload
           ]);
       };
     };
