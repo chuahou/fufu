@@ -6,7 +6,6 @@ module Mahjong.Gen where
 import Data.Array      (concat, concatMap, filter, length, replicate, nub, (..),
                         (!!))
 import Data.Maybe      (Maybe (..), isJust)
-import Data.Tuple      (Tuple (..), snd)
 import Effect          (Effect)
 import Effect.Random   (random, randomInt)
 import Prelude
@@ -95,7 +94,7 @@ genTatsu = join <<< genFromList <<< concat $
 -- Hand Generators --
 
 -- | Generates a random riichi hand.
-genRiichi :: Effect RiichiHand
+genRiichi :: Effect Hand
 genRiichi = do
   m1 <- closed <$> genMentsu
   m2 <- closed <$> genMentsu
@@ -104,15 +103,15 @@ genRiichi = do
   random >>= \x -> if (x < 0.8)
     then do
       tt <- genTatsu
-      let hand = Tuple true $ Hand tt m1 m2 m3 a
-      if isHand $ snd hand then pure hand else genRiichi
+      let hand = Hand tt m1 m2 m3 a
+      if isHand hand then pure hand else genRiichi
     else  do
       m4 <- closed <$> genMentsu
-      let hand = Tuple true $ Tanki m1 m2 m3 m4 a
-      if isHand $ snd hand then pure hand else genRiichi
+      let hand = Tanki m1 m2 m3 m4 a
+      if isHand hand then pure hand else genRiichi
 
 -- | Generates a chiitoi hand.
-genChiitoi :: Effect RiichiHand
+genChiitoi :: Effect Hand
 genChiitoi = do
   a <- genTile
   b <- genTile
@@ -123,11 +122,10 @@ genChiitoi = do
   g <- genTile
   let xs = [a, b, c, d, e, f, g]
   riichi <- (_ < 0.8) <$> random
-  if nub xs /= xs then genChiitoi else pure $
-    Tuple riichi $ Chiitoi a b c d e f g
+  if nub xs /= xs then genChiitoi else pure $ Chiitoi a b c d e f g
 
 -- | Generates a hand, with lower probability of chiitoi.
-genHand :: Effect RiichiHand
+genHand :: Effect Hand
 genHand = join <<< genFromList <<< concat $
   [ replicate 1  genChiitoi
   , replicate 10 genRiichi

@@ -2233,7 +2233,7 @@ var PS = {};
               if (v1 instanceof Data_Maybe.Nothing) {
                   return [  ];
               };
-              throw new Error("Failed pattern match at Mahjong.Hand (line 209, column 5 - line 211, column 26): " + [ v1.constructor.name ]);
+              throw new Error("Failed pattern match at Mahjong.Hand (line 206, column 5 - line 208, column 26): " + [ v1.constructor.name ]);
           })() ]);
       };
       if (v instanceof Tanki) {
@@ -2244,7 +2244,7 @@ var PS = {};
       if (v instanceof Chiitoi) {
           return Data_Array.concatMap(Data_Array.replicate(2))([ v.value0, v.value1, v.value2, v.value3, v.value4, v.value5, v.value6 ]);
       };
-      throw new Error("Failed pattern match at Mahjong.Hand (line 204, column 1 - line 204, column 34): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Mahjong.Hand (line 201, column 1 - line 201, column 34): " + [ v.constructor.name ]);
   }; 
 
   // | Check that no tile in the given list occurs more than four times.
@@ -2280,7 +2280,7 @@ var PS = {};
           if (h instanceof Chiitoi) {
               return Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(isTile)([ h.value0, h.value1, h.value2, h.value3, h.value4, h.value5, h.value6 ]);
           };
-          throw new Error("Failed pattern match at Mahjong.Hand (line 198, column 3 - line 201, column 62): " + [ h.constructor.name ]);
+          throw new Error("Failed pattern match at Mahjong.Hand (line 195, column 3 - line 198, column 62): " + [ h.constructor.name ]);
       })();
   };
   exports["Manzu"] = Manzu;
@@ -2324,7 +2324,6 @@ var PS = {};
   var Data_Eq = $PS["Data.Eq"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
-  var Data_Tuple = $PS["Data.Tuple"];
   var Effect = $PS["Effect"];
   var Effect_Random = $PS["Effect.Random"];
   var Mahjong_Hand = $PS["Mahjong.Hand"];                
@@ -2346,7 +2345,7 @@ var PS = {};
                   $tco_var_xs = xs;
                   return;
               };
-              throw new Error("Failed pattern match at Mahjong.Gen (line 34, column 26 - line 36, column 45): " + [ v.constructor.name ]);
+              throw new Error("Failed pattern match at Mahjong.Gen (line 33, column 26 - line 35, column 45): " + [ v.constructor.name ]);
           };
           while (!$tco_done) {
               $tco_result = $tco_loop($tco_var_xs);
@@ -2391,7 +2390,7 @@ var PS = {};
               return;
           };
           $tco_done = true;
-          return Data_Tuple.Tuple.create(riichi)(new Mahjong_Hand.Chiitoi(a, b, c, d, e, f, g));
+          return new Mahjong_Hand.Chiitoi(a, b, c, d, e, f, g);
       };
       while (!$tco_done) {
           $tco_result = $tco_loop();
@@ -2456,8 +2455,8 @@ var PS = {};
           var $6 = x < 0.8;
           if ($6) {
               var tt = genTatsu();
-              var hand = Data_Tuple.Tuple.create(true)(new Mahjong_Hand.Hand(tt, m1, m2, m3, a));
-              var $7 = Mahjong_Hand.isHand(Data_Tuple.snd(hand));
+              var hand = new Mahjong_Hand.Hand(tt, m1, m2, m3, a);
+              var $7 = Mahjong_Hand.isHand(hand);
               if ($7) {
                   $tco_done = true;
                   return hand;
@@ -2465,8 +2464,8 @@ var PS = {};
               return;
           };
           var m4 = Data_Functor.map(Effect.functorEffect)(Mahjong_Hand.closed)(genMentsu)();
-          var hand = Data_Tuple.Tuple.create(true)(new Mahjong_Hand.Tanki(m1, m2, m3, m4, a));
-          var $8 = Mahjong_Hand.isHand(Data_Tuple.snd(hand));
+          var hand = new Mahjong_Hand.Tanki(m1, m2, m3, m4, a);
+          var $8 = Mahjong_Hand.isHand(hand);
           if ($8) {
               $tco_done = true;
               return hand;
@@ -2731,42 +2730,42 @@ var PS = {};
       };
       return RenderHand;
   })();
-  var toRenderHand = function (v) {
+  var toRenderHand = function (h) {
       var goTanki = function (a) {
-          return function (v1) {
-              return Data_Maybe.Just.create(new RenderHand(Data_Array.cons(a)(v1.value0), v1.value1, a));
+          return function (v) {
+              return Data_Maybe.Just.create(new RenderHand(Data_Array.cons(a)(v.value0), v.value1, a));
           };
       };
       var goHand = function (tt) {
           return function (a) {
-              return function (v1) {
-                  var v2 = Control_Bind.join(Data_Maybe.bindMaybe)(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.head)(Mahjong_Hand.checkTatsu(tt)));
-                  if (v2 instanceof Data_Maybe.Just) {
-                      return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.cons(a)(Data_Array.cons(a)(Mahjong_Hand.tatsuToArray(tt))))(v1.value0), v1.value1, v2.value0));
+              return function (v) {
+                  var v1 = Control_Bind.join(Data_Maybe.bindMaybe)(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.head)(Mahjong_Hand.checkTatsu(tt)));
+                  if (v1 instanceof Data_Maybe.Just) {
+                      return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.cons(a)(Data_Array.cons(a)(Mahjong_Hand.tatsuToArray(tt))))(v.value0), v.value1, v1.value0));
                   };
                   return Data_Maybe.Nothing.value;
               };
           };
       };
-      var go = function (v1) {
-          return function (v2) {
-              if (v1 instanceof Mahjong_Hand.Kantsu) {
-                  return new Data_Tuple.Tuple(v2.value0, Data_Semigroup.append(Data_Semigroup.semigroupArray)(v2.value1)(Mahjong_Hand.mentsuToArray(v1)));
+      var go = function (v) {
+          return function (v1) {
+              if (v instanceof Mahjong_Hand.Kantsu) {
+                  return new Data_Tuple.Tuple(v1.value0, Data_Semigroup.append(Data_Semigroup.semigroupArray)(v1.value1)(Mahjong_Hand.mentsuToArray(v)));
               };
-              return new Data_Tuple.Tuple(Data_Semigroup.append(Data_Semigroup.semigroupArray)(v2.value0)(Mahjong_Hand.mentsuToArray(v1)), v2.value1);
+              return new Data_Tuple.Tuple(Data_Semigroup.append(Data_Semigroup.semigroupArray)(v1.value0)(Mahjong_Hand.mentsuToArray(v)), v1.value1);
           };
       };
       var splitKans = Data_Foldable.foldr(Data_Foldable.foldableArray)(go)(new Data_Tuple.Tuple([  ], [  ]));
-      if (v.value1 instanceof Mahjong_Hand.Hand) {
-          return goHand(v.value1.value0)(v.value1.value4)(splitKans(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.snd)([ v.value1.value1, v.value1.value2, v.value1.value3 ])));
+      if (h instanceof Mahjong_Hand.Hand) {
+          return goHand(h.value0)(h.value4)(splitKans(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.snd)([ h.value1, h.value2, h.value3 ])));
       };
-      if (v.value1 instanceof Mahjong_Hand.Tanki) {
-          return goTanki(v.value1.value4)(splitKans(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.snd)([ v.value1.value0, v.value1.value1, v.value1.value2, v.value1.value3 ])));
+      if (h instanceof Mahjong_Hand.Tanki) {
+          return goTanki(h.value4)(splitKans(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.snd)([ h.value0, h.value1, h.value2, h.value3 ])));
       };
-      if (v.value1 instanceof Mahjong_Hand.Chiitoi) {
-          return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.concatMap(Data_Array.replicate(2))([ v.value1.value0, v.value1.value1, v.value1.value2, v.value1.value3, v.value1.value4, v.value1.value5 ]))([ v.value1.value6 ]), [  ], v.value1.value6));
+      if (h instanceof Mahjong_Hand.Chiitoi) {
+          return Data_Maybe.Just.create(new RenderHand(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.concatMap(Data_Array.replicate(2))([ h.value0, h.value1, h.value2, h.value3, h.value4, h.value5 ]))([ h.value6 ]), [  ], h.value6));
       };
-      throw new Error("Failed pattern match at Main (line 28, column 33 - line 32, column 63): " + [ v.value1.constructor.name ]);
+      throw new Error("Failed pattern match at Main (line 28, column 18 - line 32, column 63): " + [ h.constructor.name ]);
   };
   var main = (function () {
       var addImg = function (d) {
@@ -2780,8 +2779,7 @@ var PS = {};
           };
       };
       return function __do() {
-          var riichiHand = Mahjong_Gen.genHand();
-          var maybeRenderHand = toRenderHand(riichiHand);
+          var maybeRenderHand = Data_Functor.map(Effect.functorEffect)(toRenderHand)(Mahjong_Gen.genHand)();
           var v = (function () {
               if (maybeRenderHand instanceof Data_Maybe.Just) {
                   return maybeRenderHand.value0;
@@ -2790,10 +2788,10 @@ var PS = {};
                   var v = Effect_Class_Console.error(Effect_Class.monadEffectEffect)("Invalid hand generated")();
                   return new RenderHand([  ], [  ], Mahjong_Hand.East.value);
               };
-              throw new Error("Failed pattern match at Main (line 48, column 33 - line 51, column 84): " + [ maybeRenderHand.constructor.name ]);
+              throw new Error("Failed pattern match at Main (line 47, column 33 - line 50, column 84): " + [ maybeRenderHand.constructor.name ]);
           })();
-          var doc = Data_Functor.map(Effect.functorEffect)(function ($64) {
-              return Web_DOM_Document.toParentNode(Web_HTML_HTMLDocument.toDocument($64));
+          var doc = Data_Functor.map(Effect.functorEffect)(function ($60) {
+              return Web_DOM_Document.toParentNode(Web_HTML_HTMLDocument.toDocument($60));
           })(Control_Bind.bind(Effect.bindEffect)(Web_HTML.window)(Web_HTML_Window.document))();
           var query = function (q) {
               return Web_DOM_ParentNode.querySelector(q)(doc);
@@ -2808,8 +2806,8 @@ var PS = {};
           (function __do() {
               var x = query("#naki")();
               if (x instanceof Data_Maybe.Just) {
-                  var $54 = Data_Foldable["null"](Data_Foldable.foldableArray)(v.value1);
-                  if ($54) {
+                  var $50 = Data_Foldable["null"](Data_Foldable.foldableArray)(v.value1);
+                  if ($50) {
                       return Web_DOM_Element.setAttribute("style")("display:none")(x.value0)();
                   };
                   return Data_Foldable.foldl(Data_Foldable.foldableArray)(addImg(x.value0))(Control_Applicative.pure(Effect.applicativeEffect)(Data_Unit.unit))(Data_Array.sort(Mahjong_Hand.ordTile)(v.value1))();
@@ -2825,16 +2823,12 @@ var PS = {};
           })();
           var x = query("#riibou")();
           if (x instanceof Data_Maybe.Just) {
-              var $59 = Data_Tuple.fst(riichiHand);
-              if ($59) {
-                  return Web_DOM_Element.setAttribute("style")("visibility:visible")(x.value0)();
-              };
-              return Data_Unit.unit;
+              return Web_DOM_Element.setAttribute("style")("visibility:visible")(x.value0)();
           };
           if (x instanceof Data_Maybe.Nothing) {
               return Data_Unit.unit;
           };
-          throw new Error("Failed pattern match at Main (line 75, column 29 - line 79, column 25): " + [ x.constructor.name ]);
+          throw new Error("Failed pattern match at Main (line 74, column 29 - line 78, column 25): " + [ x.constructor.name ]);
       };
   })();
   exports["main"] = main;

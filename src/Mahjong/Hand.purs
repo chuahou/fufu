@@ -182,9 +182,6 @@ data Hand = Hand Tatsu HMentsu HMentsu HMentsu Atama    -- ^ Standard hand.
           | Tanki HMentsu HMentsu HMentsu HMentsu Atama -- ^ Standard w/ tanki.
           | Chiitoi Tile Tile Tile Tile Tile Tile Tile  -- ^ Seven pairs.
 
--- | A hand with a boolean indicating if there was riichi.
-type RiichiHand = Tuple Boolean Hand
-
 instance showHand :: Show Hand where
   show h = (case h of
                 Hand  _ _ _ _ _       -> "Hand "

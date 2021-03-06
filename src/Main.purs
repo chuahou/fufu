@@ -3,7 +3,7 @@ module Main (main) where
 import Prelude
 
 import Data.Array            (concatMap, head, replicate, sort, (:))
-import Data.Tuple            (Tuple (..), fst, snd)
+import Data.Tuple            (Tuple (..), snd)
 import Data.Foldable         (foldl, foldr, null)
 import Data.Maybe            (Maybe (..))
 import Effect                (Effect)
@@ -24,8 +24,8 @@ import Render
 -- | tiles @ns@ and winning tile @a@.
 data RenderHand = RenderHand (Array Tile) (Array Tile) Tile
 
-toRenderHand :: RiichiHand -> Maybe RenderHand
-toRenderHand (Tuple riichi h) = case h of
+toRenderHand :: Hand -> Maybe RenderHand
+toRenderHand h = case h of
   Hand tt m1 m2 m3 a    -> goHand tt a $ splitKans <<< map snd $ [m1, m2, m3]
   Tanki m1 m2 m3 m4 a   -> goTanki a   $ splitKans <<< map snd $ [m1, m2, m3, m4]
   Chiitoi a b c d e f g -> Just $ RenderHand
@@ -43,8 +43,7 @@ toRenderHand (Tuple riichi h) = case h of
 main :: Effect Unit
 main = do
   -- Generate a hand
-  riichiHand <- genHand
-  let maybeRenderHand = toRenderHand riichiHand
+  maybeRenderHand <- toRenderHand <$> genHand
   RenderHand hand naki agari <- case maybeRenderHand of
                                      Just rh -> pure rh
                                      Nothing -> error "Invalid hand generated"
@@ -73,7 +72,7 @@ main = do
 
   -- Display riichi stick if necessary
   query "#riibou" >>= \x -> case x of
-    Just r  -> if fst riichiHand
+    Just r  -> if true -- TODO
                  then setAttribute "style" "visibility:visible" r
                  else pure unit
     Nothing -> pure unit
